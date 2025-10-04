@@ -58,7 +58,10 @@ cd seoul-traffic-pattern-analysis
 
 pip install -r requirements.txt
 
-python src/data_collection/collect_subway_data.py
+## 실행 전 발급받은 API KEY 등록 (TODO : .env 변경)
+export SEOUL_API_KEY='여기에_발급받은_API_키'
+
+python3 scripts/collect_subway_data.py
 ```
 
    

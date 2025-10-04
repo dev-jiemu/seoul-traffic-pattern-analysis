@@ -9,7 +9,6 @@ import time
 from datetime import datetime, timedelta
 import os
 
-
 class SeoulSubwayDataCollector:
     def __init__(self, api_key):
         """
@@ -80,53 +79,55 @@ class SeoulSubwayDataCollector:
         else:
             print("❌수집된 데이터가 없습니다.")
             return None
-    
+
     def _fetch_data_by_date(self, service_name, date_str):
-        """
-        특정 날짜의 데이터를 API로 가져오기
-        """
+        """특정 날짜의 데이터를 API로 가져오기"""
         start_index = 1
-        end_index = 1000  # 한 번에 최대 1000건
+        end_index = 1000
         all_results = []
-        
+
         while True:
-            # API URL 구성
-            url = f"{self.base_url}/{self.api_key}/json/{service_name}/{start_index}/{end_index}/"
-            
-            # 날짜 파라미터가 필요한 경우 추가
-            params = {
-                "USE_DT": date_str  # 실제 파라미터명은 API 문서 확인 필요
-            }
-            
+            # 날짜를 URL 경로에 직접 포함
+            url = f"{self.base_url}/{self.api_key}/json/{service_name}/{start_index}/{end_index}/{date_str}"
+
             try:
-                response = requests.get(url, params=params, timeout=30)
+                response = requests.get(url, timeout=30)
                 response.raise_for_status()
-                
+
                 data = response.json()
-                
-                # 응답 구조에 따라 데이터 추출 (실제 응답 구조에 맞게 수정 필요)
-                if 'CardSubwayTime' in data and 'row' in data['CardSubwayTime']:
-                    rows = data['CardSubwayTime']['row']
-                    all_results.extend(rows)
-                    
-                    # 더 이상 데이터가 없으면 종료
-                    if len(rows) < 1000:
+
+                # 응답 구조 확인
+                # TODO : API Spec confirm
+                if 'CardSubwayTime' in data:
+                    # 에러 체크
+                    if 'RESULT' in data['CardSubwayTime']:
+                        result_code = data['CardSubwayTime']['RESULT']['CODE']
+                        if result_code != 'INFO-000':  # 정상
+                            print(f"API 오류: {data['CardSubwayTime']['RESULT']['MESSAGE']}")
+                            break
+
+                    # 데이터 추출
+                    if 'row' in data['CardSubwayTime']:
+                        rows = data['CardSubwayTime']['row']
+                        all_results.extend(rows)
+
+                        if len(rows) < 1000:
+                            break
+
+                        start_index += 1000
+                        end_index += 1000
+                    else:
                         break
-                    
-                    # 다음 페이지를 위한 인덱스 업데이트
-                    start_index += 1000
-                    end_index += 1000
-                    
                 else:
                     break
-                    
+
             except requests.RequestException as e:
                 print(f"API 요청 오류: {str(e)}")
                 break
             except json.JSONDecodeError as e:
                 print(f"JSON 파싱 오류: {str(e)}")
                 break
-        
+
         return all_results
     
     def explore_data_structure(self, df):
