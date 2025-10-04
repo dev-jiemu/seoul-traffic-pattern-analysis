@@ -1,0 +1,49 @@
+# 파이썬
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# 데이터 파일들
+data/raw/*.csv
+data/processed/*.csv
+*.xlsx
+*.json
+
+# 환경 변수
+.env
+
+# IDE 관련
+.vscode/
+*.swp
+*.swo
+
+# 로그 파일
+*.log
+
+# 임시 파일
+*.tmp
+*.temp
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# 결과 파일들
+results/
+output/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# 캐시 디렉토리
+.cache/
