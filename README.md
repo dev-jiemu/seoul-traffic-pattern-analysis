@@ -5,6 +5,7 @@
 
 ## 데이터 소스
 - **서울시 지하철 승하차 데이터** (서울 열린데이터광장)
+  - https://data.seoul.go.kr/dataList/OA-12252/S/1/datasetView.do?tab=A
 - **서울시 버스 승하차 데이터** (서울 열린데이터광장)  
 - **TOPIS 교통정보** (서울시 교통정보 시스템)
 
@@ -24,18 +25,23 @@ seoul-traffic-pattern-analysis/
 ├── src/
 │   ├── data_collection/  # 데이터 수집 스크립트
 │   │   └── seoul_subway_data_collector.py  ✅
-│   ├── analysis/         # 분석 코드 ✅ NEW!
+│   ├── analysis/         # 분석 코드 ✅
 │   │   └── subway_pattern_analyzer.py
-│   ├── visualization/    # 시각화 코드 (예정)
+│   ├── visualization/    # 시각화 코드 ✅ NEW!
+│   │   └── subway_visualizer.py
 │   └── config/          # 설정 파일
 │       └── settings.py   ✅
 ├── scripts/             # 실행 스크립트
 │   ├── collect_subway_data.py  ✅
-│   └── analyze_patterns.py     ✅ NEW!
-├── examples/            # 예제 코드 ✅ NEW!
-│   └── analyze_example.py
+│   ├── analyze_patterns.py     ✅
+│   └── visualize_patterns.py   ✅ NEW!
+├── examples/            # 예제 코드 ✅
+│   ├── analyze_example.py
+│   └── visualize_example.py    ✅ NEW!
 ├── notebooks/           # Jupyter 노트북 (예정)
-└── results/            # 분석 결과 (CSV)
+└── results/
+    ├── *.csv            # 분석 결과 (CSV)
+    └── charts/          # 시각화 차트 (PNG) ✅ NEW!
 ```
 
 
@@ -57,11 +63,12 @@ seoul-traffic-pattern-analysis/
 - [x] 역별 특성 분석 (출근형/퇴근형/혼합형 역 분류)
 - [x] 종합 보고서 생성 기능
 
-### 🚧 Phase 3: 데이터 시각화 (다음 단계)
-- [ ] 시간대별 이용 패턴 그래프
-- [ ] 요일별 비교 차트
-- [ ] 역별 특성 히트맵
-- [ ] 노선별 이용 추이
+### 🚧 Phase 3: 데이터 시각화 (완료)
+- [x] 시간대별 이용 패턴 그래프
+- [x] 요일별 비교 차트
+- [x] 역별 TOP 20 수평 막대 그래프
+- [x] 역별 시간대별 히트맵
+- [x] 차트 자동 저장 기능 (PNG, 300 DPI)
 
 ### 📋 Phase 4: 대시보드 (계획)
 - [ ] 인터랙티브 웹 대시보드
@@ -129,7 +136,7 @@ export SEOUL_API_KEY='여기에_발급받은_API_키'
 python3 scripts/collect_subway_data.py
 ```
 
-### 4. 패턴 분석 ✨ NEW!
+### 4. 패턴 분석 ✨
 ```bash
 # 대화형 분석 실행
 python3 scripts/analyze_patterns.py
@@ -148,5 +155,33 @@ python3 examples/analyze_example.py
 - `results/hourly_pattern_YYYYMMDD_HHMMSS.csv` - 시간대별 분석
 - `results/weekday_pattern_YYYYMMDD_HHMMSS.csv` - 요일별 분석
 - `results/station_characteristics_YYYYMMDD_HHMMSS.csv` - 역별 특성
+
+### 5. 데이터 시각화 🎨 NEW!
+```bash
+# 대화형 시각화 실행
+python3 scripts/visualize_patterns.py
+
+# 또는 예제 코드 실행 (모든 차트 자동 생성)
+python3 examples/visualize_example.py
+```
+
+**시각화 옵션:**
+- 옵션 1: 시간대별 이용 패턴 그래프 (라인 차트)
+- 옵션 2: 요일별 이용 패턴 그래프 (막대 차트)
+- 옵션 3: 역별 TOP 20 그래프 (수평 막대 차트)
+- 옵션 4: 역별 시간대별 히트맵 (30개 역)
+- 옵션 5: 모든 차트 생성 (1~4 전체)
+
+**시각화 결과:**
+- `results/charts/hourly_pattern_YYYYMMDD_HHMMSS.png` - 시간대별 그래프
+- `results/charts/weekday_pattern_YYYYMMDD_HHMMSS.png` - 요일별 그래프
+- `results/charts/top_stations_YYYYMMDD_HHMMSS.png` - 역별 TOP 20
+- `results/charts/station_heatmap_YYYYMMDD_HHMMSS.png` - 히트맵
+
+**특징:**
+- 🎨 한글 폰트 지원 (맑은 고딕)
+- 📊 깔끔한 색상 구분 (평일/주말, 출근형/퇴근형 역)
+- 💾 고해상도 저장 (300 DPI)
+- 🔍 대화형 선택 메뉴
 
    

@@ -59,8 +59,9 @@ class SubwayPatternAnalyzer:
         df = self.df.copy()
         
         # 날짜 형식 변환
-        if 'USE_DT' in df.columns:
-            df['USE_DT'] = pd.to_datetime(df['USE_DT'], format='%Y%m%d')
+        # 서울 열린데이터광장 API의 실제 컬럼명: JOB_YMD (작업일자)
+        if 'JOB_YMD' in df.columns:
+            df['USE_DT'] = pd.to_datetime(df['JOB_YMD'], format='%Y%m%d')
             df['YEAR'] = df['USE_DT'].dt.year
             df['MONTH'] = df['USE_DT'].dt.month
             df['DAY'] = df['USE_DT'].dt.day
@@ -75,12 +76,15 @@ class SubwayPatternAnalyzer:
             # 평일/주말 구분
             df['IS_WEEKEND'] = df['WEEKDAY'].isin([5, 6])
             df['DAY_TYPE'] = df['IS_WEEKEND'].map({True: '주말', False: '평일'})
+        else:
+            print("⚠️  JOB_YMD 컬럼을 찾을 수 없습니다. 날짜 관련 분석을 건너뜁니다.")
             
         print("   ✅ 날짜 처리 완료")
         
         # 시간대별 승하차 컬럼 찾기
-        boarding_cols = [col for col in df.columns if 'GTON_TNOPE' in col or col.endswith('승차')]
-        alighting_cols = [col for col in df.columns if 'GTOFF_TNOPE' in col or col.endswith('하차')]
+        # 서울 열린데이터광장 API의 실제 컬럼명: HR_X_GET_ON_NOPE (승차), HR_X_GET_OFF_NOPE (하차)
+        boarding_cols = [col for col in df.columns if 'GET_ON_NOPE' in col]
+        alighting_cols = [col for col in df.columns if 'GET_OFF_NOPE' in col]
         
         if boarding_cols:
             print(f"   ✅ 승차 컬럼: {len(boarding_cols)}개")
@@ -111,18 +115,18 @@ class SubwayPatternAnalyzer:
         print(f"   총 일수: {df['USE_DT'].nunique()}일")
         
         # 노선별 통계
-        if 'LINE_NUM' in df.columns:
+        if 'SBWY_ROUT_LN_NM' in df.columns:
             print(f"\n🚇 노선별 데이터 건수:")
-            line_stats = df.groupby('LINE_NUM').size().sort_index()
+            line_stats = df.groupby('SBWY_ROUT_LN_NM').size().sort_values(ascending=False)
             for line, count in line_stats.items():
                 print(f"   {line}: {count:,}건")
         
         # 역 통계
-        if 'SUB_STA_NM' in df.columns:
+        if 'STTN' in df.columns:
             print(f"\n🚉 역 통계:")
-            print(f"   총 역 수: {df['SUB_STA_NM'].nunique()}개")
+            print(f"   총 역 수: {df['STTN'].nunique()}개")
             print(f"   가장 많은 데이터를 가진 역 TOP 5:")
-            top_stations = df['SUB_STA_NM'].value_counts().head(5)
+            top_stations = df['STTN'].value_counts().head(5)
             for station, count in top_stations.items():
                 print(f"      {station}: {count:,}건")
         
@@ -151,12 +155,12 @@ class SubwayPatternAnalyzer:
         
         # 시간대별 승하차 컬럼 찾기
         # 서울 열린데이터광장 API는 00~23시까지 시간대별로 컬럼을 제공
-        # 예: HR_4_GTON_TNOPE (4시 승차), HR_4_GTOFF_TNOPE (4시 하차)
+        # 예: HR_4_GET_ON_NOPE (4시 승차), HR_4_GET_OFF_NOPE (4시 하차)
         
         time_cols = {}
         for hour in range(24):
-            boarding_col = f'HR_{hour}_GTON_TNOPE'
-            alighting_col = f'HR_{hour}_GTOFF_TNOPE'
+            boarding_col = f'HR_{hour}_GET_ON_NOPE'
+            alighting_col = f'HR_{hour}_GET_OFF_NOPE'
             
             if boarding_col in df.columns and alighting_col in df.columns:
                 time_cols[hour] = {
@@ -238,8 +242,8 @@ class SubwayPatternAnalyzer:
         print("="*60)
         
         # 시간대별 컬럼 찾기
-        boarding_cols = [col for col in df.columns if 'GTON_TNOPE' in col]
-        alighting_cols = [col for col in df.columns if 'GTOFF_TNOPE' in col]
+        boarding_cols = [col for col in df.columns if 'GET_ON_NOPE' in col]
+        alighting_cols = [col for col in df.columns if 'GET_OFF_NOPE' in col]
         
         if not boarding_cols or not alighting_cols:
             print("⚠️  승하차 데이터 컬럼을 찾을 수 없습니다.")
@@ -266,9 +270,10 @@ class SubwayPatternAnalyzer:
         
         print(f"\n📊 요일별 평균 이용객:")
         for day, row in weekday_stats.iterrows():
+            days = int(row['데이터_일수']) if pd.notna(row['데이터_일수']) else 0
             print(f"   {day}: {row['평균_총이용']:>12,.0f}명 "
                   f"(승차 {row['평균_승차']:>10,.0f}, 하차 {row['평균_하차']:>10,.0f}) "
-                  f"[{int(row['데이터_일수'])}일]")
+                  f"[{days}일]")
         
         # 평일 vs 주말 비교
         if 'DAY_TYPE' in df.columns:
@@ -316,16 +321,16 @@ class SubwayPatternAnalyzer:
         evening_alighting = []
         
         for hour in range(7, 10):  # 7, 8, 9시
-            col_b = f'HR_{hour}_GTON_TNOPE'
-            col_a = f'HR_{hour}_GTOFF_TNOPE'
+            col_b = f'HR_{hour}_GET_ON_NOPE'
+            col_a = f'HR_{hour}_GET_OFF_NOPE'
             if col_b in df.columns:
                 morning_boarding.append(col_b)
             if col_a in df.columns:
                 morning_alighting.append(col_a)
         
         for hour in range(18, 21):  # 18, 19, 20시
-            col_b = f'HR_{hour}_GTON_TNOPE'
-            col_a = f'HR_{hour}_GTOFF_TNOPE'
+            col_b = f'HR_{hour}_GET_ON_NOPE'
+            col_a = f'HR_{hour}_GET_OFF_NOPE'
             if col_b in df.columns:
                 evening_boarding.append(col_b)
             if col_a in df.columns:
@@ -341,7 +346,7 @@ class SubwayPatternAnalyzer:
         df['EVENING_BOARDING'] = df[evening_boarding].sum(axis=1)
         df['EVENING_ALIGHTING'] = df[evening_alighting].sum(axis=1)
         
-        station_stats = df.groupby('SUB_STA_NM').agg({
+        station_stats = df.groupby('STTN').agg({
             'MORNING_BOARDING': 'sum',
             'MORNING_ALIGHTING': 'sum',
             'EVENING_BOARDING': 'sum',

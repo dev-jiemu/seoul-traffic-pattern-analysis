@@ -4,6 +4,7 @@
 """
 
 import sys
+import io
 import os
 from glob import glob
 
@@ -11,8 +12,11 @@ from glob import glob
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
-from src.analysis.subway_pattern_analyzer import SubwayPatternAnalyzer
+# Windows 콘솔 인코딩 문제 해결
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
+from src.analysis.subway_pattern_analyzer import SubwayPatternAnalyzer
 
 def find_latest_data_file(data_path="data/raw/"):
     """
