@@ -9,6 +9,7 @@ SEOUL_OPEN_DATA_API_KEY = os.getenv('SEOUL_OPEN_DATA_API_KEY')
 SEOUL_OPEN_DATA_BASE_URL = "http://openapi.seoul.go.kr:8088"
 
 # 데이터 저장 경로
+DATA_DIR = "data"
 DATA_RAW_PATH = "data/raw/"
 DATA_PROCESSED_PATH = "data/processed/"
 
