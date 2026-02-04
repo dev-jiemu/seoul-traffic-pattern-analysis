@@ -2,6 +2,7 @@
 
 import sys
 import os
+from dotenv import load_dotenv
 from datetime import datetime, timedelta
 
 # 프로젝트 루트 디렉토리를 Python 경로에 추가
@@ -39,7 +40,8 @@ def main():
     print("=" * 50)
 
     # API 키 환경변수에서 가져오기
-    api_key = os.getenv("SEOUL_API_KEY")
+    load_dotenv()  # .env 파일 로드
+    api_key = os.getenv('SEOUL_API_KEY')
 
     if not api_key:
         print("❌ API 키가 설정되지 않았습니다.")
